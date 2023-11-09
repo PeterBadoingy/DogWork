@@ -174,6 +174,7 @@ public class DogScript : Script
         public void OnTick(object sender, EventArgs e)
         {
             Update();
+
         }
 
         public bool IsSpawned()
@@ -337,7 +338,7 @@ public class DogScript : Script
             {
                 // Example: Create a new dog ped near the player's position
                 Vector3 playerPosition = Game.Player.Character.Position;
-                Vector3 spawnOffset = Game.Player.Character.ForwardVector * 2.0f; // Adjust the offset forward
+                Vector3 spawnOffset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset forward
                 Vector3 spawnPosition = playerPosition + spawnOffset;
 
                 dog = World.CreatePed(PedHash.Rottweiler, spawnPosition);
@@ -403,8 +404,9 @@ public class DogScript : Script
 
         public void StartFollowing()
         {
-            if (!isFollowing && dog != null)
+            if (dog != null)
             {
+                // Clear the current tasks to ensure the dog is not performing any other action
                 ClearDogTasks();
                 Script.Wait(100);
 
@@ -412,17 +414,14 @@ public class DogScript : Script
                 Vector3 playerPosition = Game.Player.Character.Position;
                 float playerHeading = Game.Player.Character.Heading;
 
-                // Calculate the offset to the left side of the player based on the player's rotation
-                float offsetDistance = -5.0f;  // Custom offset distance
-                float offsetX = (float)Math.Sin(playerHeading) * offsetDistance;
-                float offsetY = (float)Math.Cos(playerHeading) * offsetDistance;
-                Vector3 offset = new Vector3(offsetX, offsetY, 0.0f);
+                // Calculate the offset to the left side of the player
+                Vector3 offset = Game.Player.Character.RightVector * -2.0f; // Adjust the offset to the left
 
                 // Calculate the final position for the dog
                 Vector3 dogPosition = playerPosition + offset;
 
                 // Start following the player with the calculated offset and running
-                Function.Call(Hash.TASK_FOLLOW_TO_OFFSET_OF_ENTITY, dog.Handle, Game.Player.Character.Handle, offset.X, offset.Y, offset.Z, 5.0f, -1, 2.0f, 1, 1, 1);
+                Function.Call(Hash.TASK_FOLLOW_TO_OFFSET_OF_ENTITY, dog.Handle, Game.Player.Character.Handle, offset.X, offset.Y, offset.Z, 3.0f, -1, 8.0f, 1, 1, 1);
 
                 isFollowing = true;
                 isSitting = false;
@@ -430,6 +429,7 @@ public class DogScript : Script
                 isLayingDown = false;
             }
         }
+
 
         public void StopFollowing()
         {
@@ -509,9 +509,10 @@ public class DogScript : Script
             }
         }
 
+
         public void AttackNearbyPedestrians()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 10.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 20.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -542,6 +543,56 @@ public class DogScript : Script
             }
         }
 
+        public Ped GetClosestPedestrian()
+        {
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 20.0f);
+            Ped closestPed = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (Ped ped in nearbyPeds)
+            {
+                // Check if the pedestrian is a valid target
+                if (ped.IsAlive && !ped.IsPlayer && ped.IsHuman)
+                {
+                    // Calculate the distance to the pedestrian
+                    float distance = World.GetDistance(dog.Position, ped.Position);
+
+                    // Exclude the player from potential targets
+                    if (ped.Handle != Game.Player.Character.Handle && distance < closestDistance)
+                    {
+                        // Update the closest pedestrian
+                        closestPed = ped;
+                        closestDistance = distance;
+                    }
+                }
+            }
+
+            return closestPed;
+        }
+
+        public Ped GetClosestAggressivePed()
+        {
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 20.0f);
+            Ped closestPed = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (Ped ped in nearbyPeds.Where(IsValidAggressivePed))
+            {
+                float distance = World.GetDistance(dog.Position, ped.Position);
+                if (distance < closestDistance)
+                {
+                    closestPed = ped;
+                    closestDistance = distance;
+                }
+            }
+
+            return closestPed;
+        }
+
+        public bool IsValidAggressivePed(Ped ped)
+        {
+            return ped.IsAlive && !ped.IsPlayer && ped.IsHuman && IsPedAggressiveTowardsPlayer(ped);
+        }
 
         public void StopAttacking()
         {
