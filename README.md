@@ -21,56 +21,7 @@ Interact with the dog using in-game gestures for various behaviors.
 
 Notes:
 The script uses Los Santos Red in-game gestures to command the dog. 
-Add the following to the Gestures.xml locating in Plugins/LosSantosRED
-
-  <GestureData>
-    <Name>Follow</Name>
-    <AnimationName>gesture_come_here_hard</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>      
-  <GestureData>
-    <Name>Attack</Name>
-    <AnimationName>gesture_bring_it_on</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>true</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>      
-  <GestureData>
-    <Name>Sit </Name>
-    <AnimationName>gesture_hand_down</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
-  <GestureData>
-    <Name>Lay Down</Name>
-    <AnimationName>gesture_bye_soft</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
+Add the Gestures.xml into Plugins/LosSantosRED
 
       
 Credits
