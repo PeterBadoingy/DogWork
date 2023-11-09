@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DogWork", "DogWork.csproj", "{3493D396-FC05-40CF-AE10-978036749627}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3493D396-FC05-40CF-AE10-978036749627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3493D396-FC05-40CF-AE10-978036749627}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3493D396-FC05-40CF-AE10-978036749627}.Debug|x64.ActiveCfg = Debug|x64
+		{3493D396-FC05-40CF-AE10-978036749627}.Debug|x64.Build.0 = Debug|x64
+		{3493D396-FC05-40CF-AE10-978036749627}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3493D396-FC05-40CF-AE10-978036749627}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3493D396-FC05-40CF-AE10-978036749627}.Release|x64.ActiveCfg = Release|x64
+		{3493D396-FC05-40CF-AE10-978036749627}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F297FDA8-01BE-4018-87DD-441060A29A23}
+	EndGlobalSection
+EndGlobal
