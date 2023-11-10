@@ -194,6 +194,7 @@ public class DogScript : Script
 
                 // Set dog attributes
                 SetDogAttributes();
+                ClearDogTasks();
 
                 // Create a blip for the dog
                 Blip dogBlip = dog.AddBlip();
@@ -256,7 +257,7 @@ public class DogScript : Script
                 Function.Call(Hash.TASK_WARP_PED_INTO_VEHICLE, dog.Handle, vehicle.Handle, (int)seat);
 
                 //Notification.Show("Dog is in a vehicle!");
-                Script.Wait(1000);
+                Script.Wait(2000);
                 SitInVehicle();
                 // Wait for the dog to enter the vehicle
                 while (!dog.IsInVehicle() && Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0) != 7)
