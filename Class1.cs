@@ -11,7 +11,7 @@ using Hash = GTA.Native.Hash;
 public class DogScript : Script
 {
     public Dog dog;
-
+    public bool isDogInVehicle = false;
     public DogScript()
     {
         dog = new Dog(this);
@@ -68,8 +68,6 @@ public class DogScript : Script
             // Handle other logic if needed
         }
     }
-
-    public bool isDogInVehicle = false;
 
     public bool IsMotorcycleOrBike(Vehicle vehicle)
     {
