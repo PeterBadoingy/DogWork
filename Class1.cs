@@ -336,24 +336,18 @@ public class DogScript : Script
                 }
             }
         }
-        public void Attack()
+        public void StopSitting()
         {
-            if (!isAttacking && dog != null)
+            // Implement the logic to stop the dog from sitting
+            if (isSitting && dog != null)
             {
-                // Check if the player commands the attack
-                if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
-                {
-                    StartAttacking();
-                    StopFollowing();
-                    StopSitting();
-                    StopLayingDown();
-                }
-                else // If no attack gesture, check for automatic attack on aggressive pedestrians
-                {
-                    AttackAggressivePedestrians();
-                }
+                // Make the dog stand
+                ClearDogTasks();
+                Script.Wait(100);
+                isSitting = false;
             }
         }
+
         public void LayDown()
         {
             if (!isLayingDown && dog != null)
@@ -402,17 +396,7 @@ public class DogScript : Script
                 isFollowing = false;
             }
         }
-        public void StopSitting()
-        {
-            // Implement the logic to stop the dog from sitting
-            if (isSitting && dog != null)
-            {
-                // Make the dog stand
-                ClearDogTasks();
-                Script.Wait(100);
-                isSitting = false;
-            }
-        }
+
         public void StartLayingDown()
         {
             // Implement the logic to make the dog lay down
@@ -437,6 +421,24 @@ public class DogScript : Script
                 ClearDogTasks();
                 Script.Wait(100);
                 isLayingDown = false;
+            }
+        }
+        public void Attack()
+        {
+            if (!isAttacking && dog != null)
+            {
+                // Check if the player commands the attack
+                if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
+                {
+                    StartAttacking();
+                    StopFollowing();
+                    StopSitting();
+                    StopLayingDown();
+                }
+                else // If no attack gesture, check for automatic attack on aggressive pedestrians
+                {
+                    AttackAggressivePedestrians();
+                }
             }
         }
         public void StartAttacking()
