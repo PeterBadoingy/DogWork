@@ -282,8 +282,7 @@ public class DogScript : Script
                 dog.Position = exitPosition;
 
                 // Wait for a brief moment
-                Script.Wait(300);
-                Function.Call(Hash.CLEAR_PED_TASKS, dog.Handle);
+                ClearDogTasks();
                 // Reset the isSitting state when the dog exits the vehicle
                 isSitting = false;
             }
@@ -345,7 +344,6 @@ public class DogScript : Script
             {
                 // Make the dog stand
                 ClearDogTasks();
-                Script.Wait(100);
                 isSitting = false;
             }
         }
@@ -366,7 +364,6 @@ public class DogScript : Script
             {
                 // Clear the current tasks to ensure the dog is not performing any other action
                 ClearDogTasks();
-                Script.Wait(100);
 
                 // Get the player's position and heading
                 Vector3 playerPosition = Game.Player.Character.Position;
@@ -394,7 +391,6 @@ public class DogScript : Script
             {
                 // Stop following
                 ClearDogTasks();
-                Script.Wait(100);
                 isFollowing = false;
             }
         }
@@ -405,7 +401,6 @@ public class DogScript : Script
             if (dog != null)
             {
                 ClearDogTasks();
-                Script.Wait(100);
 
                 PlayDogAnimation("creatures@rottweiler@amb@sleep_in_kennel@", "sleep_in_kennel");
                 isLayingDown = true;
@@ -421,7 +416,6 @@ public class DogScript : Script
             if (isLayingDown && dog != null)
             {
                 ClearDogTasks();
-                Script.Wait(100);
                 isLayingDown = false;
             }
         }
@@ -449,7 +443,6 @@ public class DogScript : Script
             if (dog != null)
             {
                 ClearDogTasks();
-                Script.Wait(100);
 
                 if (!Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
                 {
@@ -621,7 +614,6 @@ public class DogScript : Script
             if (isAttacking && dog != null)
             {
                 ClearDogTasks();
-                Script.Wait(100);
                 isAttacking = false;
             }
         }
