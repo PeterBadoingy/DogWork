@@ -272,6 +272,7 @@ public class DogScript : Script
                 }
             }
         }
+
         public void ExitVehicle()
         {
             if (dog != null && dog.IsInVehicle())
@@ -628,7 +629,9 @@ public class DogScript : Script
         public void ClearDogTasks()
         {
             Function.Call(Hash.CLEAR_PED_TASKS, dog.Handle);
+            Script.Wait(500);  // Adjust the wait time as needed
         }
+
         public void CheckGestures()
         {
             CheckGesture("gesture_come_here_hard", "gestures@m@standing@casual", FollowPlayer);
