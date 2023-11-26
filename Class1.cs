@@ -159,6 +159,7 @@ public class DogScript : Script
         public bool isSitting = false;
         public bool isAttacking = false;
         public bool isLayingDown = false;
+        public bool isDogInVehicle = false;
 
         public DogScript dogScript;
         public Dog(DogScript script)
