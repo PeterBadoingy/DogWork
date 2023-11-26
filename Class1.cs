@@ -141,12 +141,12 @@ public class DogScript : Script
             if (!dog.IsSpawned())
             {
                 dog.Spawn();
-                //Notification.Show("Dog Spawned!", true, true);
+                //UI.Notify("Dog Spawned!", true, true);
             }
             else
             {
                 dog.Delete();
-               // Notification.PostTicker("Dog Removed!",true, true);
+                //UI.Notify("Dog Removed!",true, true);
             }
         }
     }
@@ -470,7 +470,7 @@ public class DogScript : Script
             {
                 return;
             }
-            Ped[] aggressivePeds = World.GetNearbyPeds(dog.Position, 60.0f);
+            Ped[] aggressivePeds = World.GetNearbyPeds(dog.Position, 75.0f);
 
             foreach (Ped ped in aggressivePeds)
             {
@@ -517,7 +517,7 @@ public class DogScript : Script
         public bool HasBeenDamagedByNPC(Ped player)
         {
             // Check if the player has been damaged by an NPC
-            foreach (Ped npc in World.GetNearbyPeds(player.Position, 60.0f))
+            foreach (Ped npc in World.GetNearbyPeds(player.Position, 75.0f))
             {
                 if (npc.IsAlive && !npc.IsPlayer && npc.IsHuman)
                 {
@@ -532,7 +532,7 @@ public class DogScript : Script
         }
         public void AttackNearbyPedestrians()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 60.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 75.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
            // Notification.PostTicker("Checking for aggressive pedestrians", true ,true);
@@ -564,7 +564,7 @@ public class DogScript : Script
         }
         public Ped GetClosestPedestrian()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 30.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 75.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -590,7 +590,7 @@ public class DogScript : Script
         }
         public Ped GetClosestAggressivePed()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 60.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 75.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -622,7 +622,7 @@ public class DogScript : Script
         public void ClearDogTasks()
         {
             Function.Call(Hash.CLEAR_PED_TASKS, dog.Handle);
-            Script.Wait(500);  // Adjust the wait time as needed
+            Script.Wait(1000);  // Adjust the wait time as needed
         }
 
         public void CheckGestures()
