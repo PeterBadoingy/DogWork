@@ -174,7 +174,7 @@ public class DogScript : Script
                 Vector3 spawnOffset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset forward
                 Vector3 spawnPosition = playerPosition + spawnOffset;
 
-                dog = World.CreatePed(PedHash.Panther, spawnPosition);
+                dog = World.CreatePed(PedHash.Shepherd, spawnPosition);
 
                 // Set dog attributes
                 SetDogAttributes();
