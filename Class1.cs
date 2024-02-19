@@ -13,6 +13,9 @@ public class DogScript : Script
 {
     public Dog dog;
     public bool isDogInVehicle = false;
+    const float NearbyPedestrianRadius = 35.0f;
+    const float VehicleSpawnOffset = -2.0f;
+
     public DogScript()
     {
         dog = new Dog(this);
@@ -29,46 +32,25 @@ public class DogScript : Script
 
             if (playerVehicle != null && playerVehicle.Exists())
             {
-                // Check if the player's vehicle is not a motorcycle or bike
-                if (!IsMotorcycleOrBike(playerVehicle))
+                if (!IsMotorcycleOrBike(playerVehicle) && !isDogInVehicle)
                 {
-                    if (!isDogInVehicle)
-                    {
-                        // Dog is not in the vehicle, so command it to enter as a passenger
-                        dog.EnterVehicle(playerVehicle, VehicleSeat.Passenger);
-                        isDogInVehicle = true;
-                    }
-                }
-                else
-                {
-                   // if (isDogInVehicle)
-                    {
-                        // Dog is in the vehicle, so command it to exit
-                       // dog.ExitVehicle();
-                        //isDogInVehicle = false;
-                    }
+                    dog.EnterVehicle(playerVehicle, VehicleSeat.Passenger);
+                    isDogInVehicle = true;
                 }
             }
-            else
+            else if (isDogInVehicle)
             {
-                if (isDogInVehicle)
-                {
-                    // Dog is in the vehicle, so command it to exit
-                    dog.ExitVehicle();
-                    isDogInVehicle = false;
-                }
+                dog.ExitVehicle();
+                dog.StartFollowing();
+                isDogInVehicle = false;
             }
         }
         if (dog.HasBeenDamagedByNPC(Game.Player.Character))
         {
-            // Player is being attacked by an NPC, make the dog aggressive
             dog.Attack();
         }
-        else
-        {
-            // Handle other logic if needed
-        }
     }
+
 
     public bool IsMotorcycleOrBike(Vehicle vehicle)
     {
@@ -156,7 +138,7 @@ public class DogScript : Script
     public class Dog
     {
         public Ped dog;
-        public bool isFollowing = false;
+        public bool isFollowing = true;
         public bool isSitting = false;
         public bool isAttacking = false;
         public bool isLayingDown = false;
@@ -192,11 +174,10 @@ public class DogScript : Script
                 Vector3 spawnOffset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset forward
                 Vector3 spawnPosition = playerPosition + spawnOffset;
 
-                dog = World.CreatePed(PedHash.Rottweiler, spawnPosition);
+                dog = World.CreatePed(PedHash.Panther, spawnPosition);
 
                 // Set dog attributes
                 SetDogAttributes();
-                ClearDogTasks();
 
                 // Create a blip for the dog
                 Blip dogBlip = dog.AddBlip();
@@ -204,8 +185,10 @@ public class DogScript : Script
                 dogBlip.Name = "Dog";
                 dogBlip.Scale = 0.5f;
 
-                // The dog will not follow or attack initially
-                isFollowing = false;
+                // The dog will follow or attack initially
+
+                StartFollowing();
+                isFollowing = true;
                 isSitting = false;
                 isAttacking = false;
                 isLayingDown = false;
@@ -433,25 +416,9 @@ public class DogScript : Script
                     StopSitting();
                     StopLayingDown();
                 }
-                else // If no attack gesture, check for automatic attack on aggressive pedestrians
+                else
                 {
-                    if (dog != null && dog.Exists())
-                    {
-                        Ped currentTarget = GetClosestAggressivePed();
-
-                        if (currentTarget != null)
-                        {
-                            // Log information about the aggressive NPC
-                            // Log($"Found aggressive NPC: {currentTarget.Handle}");
-
-                            // Assign combat task to the dog
-                            Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, currentTarget.Handle, 0, 16);
-                            isAttacking = true;
-                            isFollowing = false;
-                            isSitting = false;
-                            isLayingDown = false;
-                        }
-                    }
+                    AttackAggressivePedestrians();
                 }
             }
         }
@@ -459,16 +426,13 @@ public class DogScript : Script
 
         private void StartAttacking()
         {
-            if (dog != null && dog.Exists())
+            if (dog != null && dog.Exists() && !isAttacking && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
             {
                 ClearDogTasks();
 
-                if (!Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
+                if (!dog.IsInVehicle() || !Function.Call<bool>(Hash.GET_PED_STEALTH_MOVEMENT, dog.Handle))
                 {
-                    if (!dog.IsInVehicle() || (dog.IsInVehicle() && !Function.Call<bool>(Hash.GET_PED_STEALTH_MOVEMENT, dog.Handle)))
-                    {
-                        AttackNearbyPedestrians();
-                    }
+                    AttackNearbyPedestrians();
                 }
 
                 isAttacking = true;
@@ -477,6 +441,7 @@ public class DogScript : Script
                 isLayingDown = false;
             }
         }
+
 
         public void AttackNearbyPedestrians()
         {
@@ -491,7 +456,7 @@ public class DogScript : Script
 
         public Ped GetClosestPedestrian()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 75.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 35.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -513,43 +478,46 @@ public class DogScript : Script
         }
         public bool HasBeenDamagedByNPC(Ped player)
         {
-            // Check if the player has been damaged by an NPC
-            foreach (Ped npc in World.GetNearbyPeds(player.Position, 75.0f))
+            foreach (Ped npc in World.GetNearbyPeds(player.Position, 35.0f))
             {
-                if (npc.IsAlive && !npc.IsPlayer && npc.IsHuman)
+                if (IsValidPedestrianTarget(npc, player.Handle) && player.HasBeenDamagedBy(npc))
                 {
-                    if (player.HasBeenDamagedBy(npc))
-                    {
-                        //Notification.Show("Got Hit!");
-                        return true;
-                    }
+                    //Notification.Show("Got Hit!");
+                    return true;
                 }
             }
             return false;
         }
+
         public bool IsValidPedestrianTarget(Ped ped, int playerHandle)
         {
             return ped.IsAlive && !ped.IsPlayer && ped.IsHuman && ped.Handle != playerHandle;
         }
 
+
         public Ped GetClosestAggressivePed()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 75.0f);
-            Ped closestPed = null;
-            float closestDistance = float.MaxValue;
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, NearbyPedestrianRadius)
+                                    .Where(ped => IsValidAggressivePed(ped))
+                                    .ToArray();
 
-            foreach (Ped ped in nearbyPeds.Where(IsValidAggressivePed))
+            if (nearbyPeds.Length > 0)
             {
-                float distance = World.GetDistance(dog.Position, ped.Position);
-                if (distance < closestDistance)
+                // Sort by distance to the dog
+                Array.Sort(nearbyPeds, (ped1, ped2) =>
                 {
-                    closestPed = ped;
-                    closestDistance = distance;
-                }
+                    float distance1 = World.GetDistance(dog.Position, ped1.Position);
+                    float distance2 = World.GetDistance(dog.Position, ped2.Position);
+                    return distance1.CompareTo(distance2);
+                });
+
+                // Return the closest aggressive pedestrian
+                return nearbyPeds[0];
             }
 
-            return closestPed;
+            return null;
         }
+
         public bool IsPedAggressiveTowardsPlayer(Ped ped)
         {
             // Check if the pedestrian is aggressive towards the player
@@ -561,50 +529,32 @@ public class DogScript : Script
             {
                 return;
             }
-            Ped[] aggressivePeds = World.GetNearbyPeds(dog.Position, 75.0f);
+
+            Ped[] aggressivePeds = World.GetNearbyPeds(dog.Position, 35.0f)
+                                          .Where(ped => IsValidAggressivePed(ped) && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, ped.Handle))
+                                          .ToArray();
 
             foreach (Ped ped in aggressivePeds)
             {
-                // Check if the pedestrian is a valid target
-                if (ped.IsAlive && !ped.IsPlayer && ped.IsHuman)
-                {
-                    // Check if the pedestrian is targeting the player
-                    bool isAggressive = Function.Call<bool>(Hash.IS_PED_IN_COMBAT, ped.Handle, Game.Player.Character.Handle);
-
-                    if (isAggressive)
-                    {
-                        // Check if the dog is not already attacking this pedestrian
-                        bool isDogNotAttacking = !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, ped.Handle);
-
-                        if (isDogNotAttacking)
-                        {
-                            // Log information about the aggressive NPC
-                            //Log($"Found aggressive NPC: {ped.Handle}");
-
-                            // Assign combat task to the dog
-                            Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, ped.Handle, 0, 16);
-                            isAttacking = true;
-                            isFollowing = false;
-                            isSitting = false;
-                            isLayingDown = false;
-                        }
-                    }
-                }
+                Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, ped.Handle, 0, 16);
+                isAttacking = true;
+                isFollowing = false;
+                isSitting = false;
+                isLayingDown = false;
             }
 
-            // Additionally, check if the dog is not attacking any aggressive NPCs and clear tasks if needed
             if (isAttacking)
             {
                 Ped currentTarget = GetClosestAggressivePed();
 
                 if (currentTarget == null)
                 {
-                    // Clear tasks if there are no aggressive NPCs nearby
                     ClearDogTasks();
                     isAttacking = false;
                 }
             }
         }
+
         public bool IsValidAggressivePed(Ped ped)
         {
             return ped.IsAlive && !ped.IsPlayer && ped.IsHuman && IsPedAggressiveTowardsPlayer(ped);
