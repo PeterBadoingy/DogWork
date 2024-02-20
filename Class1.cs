@@ -174,7 +174,7 @@ public class DogScript : Script
                 Vector3 spawnOffset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset forward
                 Vector3 spawnPosition = playerPosition + spawnOffset;
 
-                dog = World.CreatePed(PedHash.Shepherd, spawnPosition);
+                dog = World.CreatePed(PedHash.Chop2, spawnPosition);
 
                 // Set dog attributes
                 SetDogAttributes();
@@ -412,13 +412,14 @@ public class DogScript : Script
                 if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
                 {
                     StartAttacking();
-                    StopFollowing();
+                    StopFollowing(); // Stop following when attacking
                     StopSitting();
                     StopLayingDown();
                 }
                 else
                 {
                     AttackAggressivePedestrians();
+                    StartFollowing(); // Resume following if not attacking
                 }
             }
         }
@@ -530,29 +531,22 @@ public class DogScript : Script
                 return;
             }
 
-            Ped[] aggressivePeds = World.GetNearbyPeds(dog.Position, 35.0f)
-                                          .Where(ped => IsValidAggressivePed(ped) && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, ped.Handle))
-                                          .ToArray();
+            // Get nearby pedestrians
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, NearbyPedestrianRadius);
 
-            foreach (Ped ped in aggressivePeds)
+            foreach (Ped ped in nearbyPeds)
             {
-                Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, ped.Handle, 0, 16);
-                isAttacking = true;
-                isFollowing = false;
-                isSitting = false;
-                isLayingDown = false;
-            }
-
-            if (isAttacking)
-            {
-                Ped currentTarget = GetClosestAggressivePed();
-
-                if (currentTarget == null)
+                if (IsValidAggressivePed(ped) && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, ped.Handle))
                 {
-                    ClearDogTasks();
-                    isAttacking = false;
+                    Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, ped.Handle, 0, 16);
                 }
             }
+
+            // Check if there are aggressive pedestrians nearby
+            bool aggressivePedNearby = nearbyPeds.Any(ped => IsValidAggressivePed(ped));
+
+            // Set the isAttacking flag based on whether there are aggressive pedestrians nearby
+            isAttacking = aggressivePedNearby;
         }
 
         public bool IsValidAggressivePed(Ped ped)
