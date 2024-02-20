@@ -20,7 +20,7 @@ public class DogScript : Script
     {
         dog = new Dog(this);
         Tick += OnTick;
-        Interval = (100);
+        Interval = (1000);
         KeyDown += OnKeyDown;
     }
 
@@ -451,7 +451,7 @@ public class DogScript : Script
 
         public Ped GetClosestPedestrian()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 60.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 55.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -473,7 +473,7 @@ public class DogScript : Script
         }
         public bool HasBeenDamagedByNPC(Ped player)
         {
-            foreach (Ped npc in World.GetNearbyPeds(player.Position, 60.0f))
+            foreach (Ped npc in World.GetNearbyPeds(player.Position, 55.0f))
             {
                 if (IsValidPedestrianTarget(npc, player.Handle) && player.HasBeenDamagedBy(npc))
                 {
