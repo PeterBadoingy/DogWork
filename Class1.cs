@@ -406,7 +406,7 @@ public class DogScript : Script
         }
         public void Attack()
         {
-            if (!isAttacking)
+            if (!isAttacking && dog != null && dog.Exists())
             {
                 // Check if the player commands the attack
                 if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
@@ -418,12 +418,11 @@ public class DogScript : Script
                 }
                 else
                 {
+                    // If the player doesn't command the attack, check for aggressive pedestrians
                     AttackAggressivePedestrians();
-                    StartFollowing(); // Resume following if not attacking
                 }
             }
         }
-
 
         private void StartAttacking()
         {
@@ -435,11 +434,6 @@ public class DogScript : Script
                 {
                     AttackNearbyPedestrians();
                 }
-
-                isAttacking = true;
-                isFollowing = false;
-                isSitting = false;
-                isLayingDown = false;
             }
         }
 
@@ -457,7 +451,7 @@ public class DogScript : Script
 
         public Ped GetClosestPedestrian()
         {
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 35.0f);
+            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 60.0f);
             Ped closestPed = null;
             float closestDistance = float.MaxValue;
 
@@ -479,7 +473,7 @@ public class DogScript : Script
         }
         public bool HasBeenDamagedByNPC(Ped player)
         {
-            foreach (Ped npc in World.GetNearbyPeds(player.Position, 35.0f))
+            foreach (Ped npc in World.GetNearbyPeds(player.Position, 60.0f))
             {
                 if (IsValidPedestrianTarget(npc, player.Handle) && player.HasBeenDamagedBy(npc))
                 {
@@ -524,29 +518,20 @@ public class DogScript : Script
             // Check if the pedestrian is aggressive towards the player
             return Function.Call<bool>(Hash.IS_PED_IN_COMBAT, ped.Handle, Game.Player.Character.Handle);
         }
-        public void AttackAggressivePedestrians()
+        private void AttackAggressivePedestrians()
         {
-            if (dog == null || !dog.Exists())
+            // Get the closest aggressive pedestrian
+            Ped closestAggressivePed = GetClosestAggressivePed();
+
+            // If there is an aggressive pedestrian, attack it
+            if (closestAggressivePed != null)
             {
-                return;
+                Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, closestAggressivePed.Handle, 0, 16);
+                isAttacking = true;
+                isFollowing = false;
+                isSitting = false;
+                isLayingDown = false;
             }
-
-            // Get nearby pedestrians
-            Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, NearbyPedestrianRadius);
-
-            foreach (Ped ped in nearbyPeds)
-            {
-                if (IsValidAggressivePed(ped) && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, ped.Handle))
-                {
-                    Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, ped.Handle, 0, 16);
-                }
-            }
-
-            // Check if there are aggressive pedestrians nearby
-            bool aggressivePedNearby = nearbyPeds.Any(ped => IsValidAggressivePed(ped));
-
-            // Set the isAttacking flag based on whether there are aggressive pedestrians nearby
-            isAttacking = aggressivePedNearby;
         }
 
         public bool IsValidAggressivePed(Ped ped)
@@ -555,7 +540,7 @@ public class DogScript : Script
         }
         public void StopAttacking()
         {
-            if (isAttacking && dog != null && dog.Exists()) 
+            if (isAttacking && dog != null && dog.Exists())
             {
                 ClearDogTasks();
                 isAttacking = false;
@@ -565,7 +550,6 @@ public class DogScript : Script
         public void ClearDogTasks()
         {
             Function.Call(Hash.CLEAR_PED_TASKS, dog.Handle);
-            Script.Wait(1000);  // Adjust the wait time as needed
         }
 
         public void CheckGestures()
