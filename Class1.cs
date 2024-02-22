@@ -174,7 +174,7 @@ public class DogScript : Script
                 Vector3 spawnOffset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset forward
                 Vector3 spawnPosition = playerPosition + spawnOffset;
 
-                dog = World.CreatePed(PedHash.Chop2, spawnPosition);
+                dog = World.CreatePed(PedHash.Retriever, spawnPosition);
 
                 // Set dog attributes
                 SetDogAttributes();
@@ -242,12 +242,12 @@ public class DogScript : Script
                 Function.Call(Hash.TASK_WARP_PED_INTO_VEHICLE, dog.Handle, vehicle.Handle, (int)seat);
 
                 //Notification.Show("Dog is in a vehicle!");
-                Script.Wait(2000);
+                Script.Wait(800);
                 SitInVehicle();
                 // Wait for the dog to enter the vehicle
                 while (!dog.IsInVehicle() && Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0) != 7)
                 {
-                    Script.Wait(1000);
+                    Script.Wait(800);
                 }
 
                 // Ensure the dog is in the correct vehicle seat
@@ -355,13 +355,14 @@ public class DogScript : Script
                 float playerHeading = Game.Player.Character.Heading;
 
                 // Calculate the offset to the left side of the player
-                Vector3 offset = Game.Player.Character.ForwardVector * -2.0f; // Adjust the offset to the left
+                Vector3 offset = Game.Player.Character.RightVector * 2.0f; // Adjust the offset to the right   
 
                 // Calculate the final position for the dog
                 Vector3 dogPosition = playerPosition + offset;
 
                 // Start following the player with the calculated offset and running
-                Function.Call(Hash.TASK_FOLLOW_TO_OFFSET_OF_ENTITY, dog.Handle, Game.Player.Character.Handle, offset.X, offset.Y, offset.Z, 3.0f, -1, 8.0f, 1, 1, 1);
+                Function.Call(Hash.TASK_FOLLOW_TO_OFFSET_OF_ENTITY, dog.Handle, Game.Player.Character.Handle, offset.X, offset.Y, offset.Z, 3.0f, -1, 3.0f, true);
+                Function.Call(Hash.SET_PED_KEEP_TASK, dog.Handle, true);
 
                 isFollowing = true;
                 isSitting = false;
