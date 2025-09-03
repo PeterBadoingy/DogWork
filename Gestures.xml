@@ -1,5 +1,53 @@
 <ArrayOfGestureData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <GestureData>
+    <Name>Follow</Name>
+    <AnimationName>gesture_come_here_hard</AnimationName>
+    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
+    <AnimationEnter />
+    <AnimationExit />
+    <IsInsulting>false</IsInsulting>
+    <IsOnActionWheel>true</IsOnActionWheel>
+    <SetRepeat>false</SetRepeat>
+    <IsWholeBody>false</IsWholeBody>
+    <Category>Dog Control</Category>
+  </GestureData>
+  <GestureData>
+    <Name>Attack</Name>
+    <AnimationName>gesture_bring_it_on</AnimationName>
+    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
+    <AnimationEnter />
+    <AnimationExit />
+    <IsInsulting>true</IsInsulting>
+    <IsOnActionWheel>true</IsOnActionWheel>
+    <SetRepeat>false</SetRepeat>
+    <IsWholeBody>false</IsWholeBody>
+    <Category>Dog Control</Category>
+  </GestureData>
+  <GestureData>
+    <Name>Sit </Name>
+    <AnimationName>gesture_hand_down</AnimationName>
+    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
+    <AnimationEnter />
+    <AnimationExit />
+    <IsInsulting>false</IsInsulting>
+    <IsOnActionWheel>true</IsOnActionWheel>
+    <SetRepeat>false</SetRepeat>
+    <IsWholeBody>false</IsWholeBody>
+    <Category>Dog Control</Category>
+  </GestureData>
+    <GestureData>
+    <Name>Lay Down</Name>
+    <AnimationName>gesture_bye_soft</AnimationName>
+    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
+    <AnimationEnter />
+    <AnimationExit />
+    <IsInsulting>false</IsInsulting>
+    <IsOnActionWheel>true</IsOnActionWheel>
+    <SetRepeat>false</SetRepeat>
+    <IsWholeBody>false</IsWholeBody>
+    <Category>Dog Control</Category>
+  </GestureData>
+  <GestureData>
     <Name>The Finger Quick</Name>
     <AnimationName>enter</AnimationName>
     <AnimationDictionary>anim@mp_player_intselfiethe_bird</AnimationDictionary>
@@ -66,7 +114,7 @@
     <AnimationEnter />
     <AnimationExit />
     <IsInsulting>true</IsInsulting>
-    <IsOnActionWheel>false</IsOnActionWheel>
+    <IsOnActionWheel>true</IsOnActionWheel>
     <SetRepeat>false</SetRepeat>
     <IsWholeBody>false</IsWholeBody>
     <Category>Gesture</Category>
@@ -102,7 +150,7 @@
     <AnimationEnter />
     <AnimationExit />
     <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>false</IsOnActionWheel>
+    <IsOnActionWheel>true</IsOnActionWheel>
     <SetRepeat>false</SetRepeat>
     <IsWholeBody>false</IsWholeBody>
     <Category>Gesture</Category>
@@ -162,7 +210,7 @@
     <AnimationEnter />
     <AnimationExit />
     <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>false</IsOnActionWheel>
+    <IsOnActionWheel>true</IsOnActionWheel>
     <SetRepeat>false</SetRepeat>
     <IsWholeBody>false</IsWholeBody>
     <Category>Gesture</Category>
@@ -563,52 +611,4 @@
     <IsWholeBody>false</IsWholeBody>
     <Category>Idles</Category>
   </GestureData>
-  <GestureData>
-    <Name>Follow</Name>
-    <AnimationName>gesture_come_here_hard</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
-  <GestureData>
-    <Name>Attack</Name>
-    <AnimationName>gesture_bring_it_on</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>true</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
-  <GestureData>
-    <Name>Sit </Name>
-    <AnimationName>gesture_hand_down</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
-    <GestureData>
-    <Name>Lay Down</Name>
-    <AnimationName>gesture_bye_soft</AnimationName>
-    <AnimationDictionary>gestures@m@standing@casual</AnimationDictionary>
-    <AnimationEnter />
-    <AnimationExit />
-    <IsInsulting>false</IsInsulting>
-    <IsOnActionWheel>true</IsOnActionWheel>
-    <SetRepeat>false</SetRepeat>
-    <IsWholeBody>false</IsWholeBody>
-    <Category>Dog Control</Category>
-  </GestureData>
-  </ArrayOfGestureData>
+</ArrayOfGestureData>
