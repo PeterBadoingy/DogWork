@@ -25,4 +25,4 @@ Add the Gestures.xml into Plugins/LosSantosRED
 
       
 Credits
-DogScript was created by Peter Badoingy and Chat GPT.
+DogScript was created by Peter Badoingy.
