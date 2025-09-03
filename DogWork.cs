@@ -86,10 +86,11 @@ public class DogScript : Script
 
 public class Dog
 {
-    public enum DogState { None, Following, Sitting, Attacking, LayingDown }
-
     public Ped dog;
-    private DogState currentState = DogState.None;
+    public bool isFollowing = false; // Initialize as false to avoid state mismatch
+    public bool isSitting = false;
+    public bool isAttacking = false;
+    public bool isLayingDown = false;
     public DogScript dogScript;
 
     public Dog(DogScript script)
@@ -114,9 +115,19 @@ public class Dog
     public void Update()
     {
         CheckGestures();
-        if (currentState == DogState.Attacking && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
+        // Check attack status after a delay to allow task execution
+        if (isAttacking)
         {
-            StartFollowing(); // Reset to following when combat ends
+            Script.Wait(500); // Give task time to start
+            if (!Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
+            {
+                int taskStatus = Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0xBADA5B65); // Hash for TASK_COMBAT_PED
+                if (taskStatus == 7) // Task failed or finished
+                {
+                    StartFollowing();
+
+                }
+            }
         }
     }
 
@@ -138,7 +149,18 @@ public class Dog
                 dogBlip.Name = "Dog";
                 dogBlip.Scale = 0.5f;
 
+                // Ensure clean task queue before following
+                ClearDogTasks();
+                Script.Wait(100); // Brief delay for AI initialization
                 StartFollowing();
+                // Verify follow task
+                int taskStatus = Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0x7D8F4411); // Hash for TASK_FOLLOW_TO_OFFSET_OF_ENTITY
+
+                if (taskStatus == 7)
+                {
+                    ClearDogTasks();
+                    StartFollowing();
+                }
             }
         }
     }
@@ -169,7 +191,10 @@ public class Dog
         {
             dog.Delete();
             dog = null;
-            currentState = DogState.None;
+            isFollowing = false;
+            isSitting = false;
+            isAttacking = false;
+            isLayingDown = false;
         }
     }
 
@@ -192,7 +217,10 @@ public class Dog
 
             if (dog.IsInVehicle() && dog.CurrentVehicle == vehicle)
             {
-                currentState = DogState.Sitting;
+                isSitting = true;
+                isFollowing = false;
+                isAttacking = false;
+                isLayingDown = false;
             }
             else
             {
@@ -217,20 +245,35 @@ public class Dog
 
     public void StartFollowing()
     {
-        if (dog != null && dog.Exists() && currentState != DogState.Following)
+        if (dog != null && dog.Exists() && !isFollowing)
         {
             ClearDogTasks();
+            Script.Wait(100); // Ensure task queue is clear
             Vector3 offset = Game.Player.Character.RightVector * 2.0f;
             Function.Call(Hash.TASK_FOLLOW_TO_OFFSET_OF_ENTITY, dog.Handle, Game.Player.Character.Handle, offset.X, offset.Y, offset.Z, 3.0f, -1, 3.0f, true);
-            Function.Call(Hash.SET_PED_KEEP_TASK, dog.Handle, true);
-            currentState = DogState.Following;
+            isFollowing = true;
+            isSitting = false;
+            isAttacking = false;
+            isLayingDown = false;
+            // Verify follow task
+            int taskStatus = Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0x7D8F4411); // Hash for TASK_FOLLOW_TO_OFFSET_OF_ENTITY
+        }
+    }
+
+    public void StopFollowing()
+    {
+        if (isFollowing && dog != null && dog.Exists())
+        {
+            ClearDogTasks();
+            isFollowing = false;
         }
     }
 
     public void Sit()
     {
-        if (dog != null && dog.Exists() && currentState != DogState.Sitting)
+        if (!isSitting && dog != null && dog.Exists())
         {
+            ClearDogTasks();
             if (!dog.IsInVehicle())
             {
                 PlayDogAnimation("creatures@rottweiler@amb@world_dog_sitting@base", "base");
@@ -239,48 +282,90 @@ public class Dog
             {
                 PlayDogAnimation("creatures@rottweiler@in_vehicle@low_car", "sit");
             }
-            currentState = DogState.Sitting;
+            isSitting = true;
+            isFollowing = false;
+            isAttacking = false;
+            isLayingDown = false;
+        }
+    }
+
+    public void StopSitting()
+    {
+        if (isSitting && dog != null && dog.Exists())
+        {
+            ClearDogTasks();
+            isSitting = false;
         }
     }
 
     public void LayDown()
     {
-        if (dog != null && dog.Exists() && currentState != DogState.LayingDown)
+        if (!isLayingDown && dog != null && dog.Exists())
         {
             ClearDogTasks();
             PlayDogAnimation("creatures@rottweiler@amb@sleep_in_kennel@", "sleep_in_kennel");
-            currentState = DogState.LayingDown;
+            isLayingDown = true;
+            isSitting = false;
+            isFollowing = false;
+            isAttacking = false;
+        }
+    }
+
+    public void StopLayingDown()
+    {
+        if (isLayingDown && dog != null && dog.Exists())
+        {
+            ClearDogTasks();
+            isLayingDown = false;
         }
     }
 
     public void Attack()
     {
-        if (dog != null && dog.Exists() && currentState != DogState.Attacking && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
+        if (!isAttacking && dog != null && dog.Exists())
         {
             if (dog.IsInVehicle())
             {
                 ExitVehicle();
             }
+            AttackAggressivePedestrians();
+        }
+    }
 
-            // Prioritize attacking aggressive NPCs (defensive behavior)
-            Ped aggressivePed = GetClosestAggressivePed();
-            if (aggressivePed != null)
+    private void StartAttacking()
+    {
+        if (dog != null && dog.Exists() && !isAttacking && !Function.Call<bool>(Hash.IS_PED_IN_COMBAT, dog.Handle, 0))
+        {
+            if (dog.IsInVehicle())
             {
-                Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, aggressivePed.Handle, 0, 16);
-                Function.Call(Hash.SET_PED_KEEP_TASK, dog.Handle, true);
-                currentState = DogState.Attacking;
+                ExitVehicle();
             }
-            // If no aggressive NPCs and gesture is performed, attack nearby pedestrian
-            else if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
-            {
-                Ped closestPed = GetClosestPedestrian();
-                if (closestPed != null)
-                {
-                    Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, closestPed.Handle, 0, 16);
-                    Function.Call(Hash.SET_PED_KEEP_TASK, dog.Handle, true);
-                    currentState = DogState.Attacking;
-                }
-            }
+            ClearDogTasks();
+            Script.Wait(100); // Brief delay to ensure task clearing
+            AttackNearbyPedestrians();
+        }
+    }
+
+    public void AttackNearbyPedestrians()
+    {
+        Ped closestPed = GetClosestPedestrian();
+        if (closestPed != null)
+        {
+            float distance = Vector3.Distance(dog.Position, closestPed.Position);
+            bool isTargetInCombat = Function.Call<bool>(Hash.IS_PED_IN_COMBAT, closestPed.Handle, 0);
+
+            Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, closestPed.Handle, 0, 16);
+            isAttacking = true;
+            isFollowing = false;
+            isSitting = false;
+            isLayingDown = false;
+
+            int taskStatus = Function.Call<int>(Hash.GET_SCRIPT_TASK_STATUS, dog.Handle, 0xBADA5B65); // Hash for TASK_COMBAT_PED
+
+        }
+        else
+        {
+  
         }
     }
 
@@ -289,7 +374,7 @@ public class Dog
         if (dog == null || !dog.Exists())
             return null;
 
-        Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 55.0f);
+        Ped[] nearbyPeds = World.GetNearbyPeds(dog.Position, 30.0f);
         Ped closestPed = null;
         float closestDistance = float.MaxValue;
 
@@ -298,7 +383,7 @@ public class Dog
             if (ped != null && ped.Exists() && IsValidPedestrianTarget(ped, Game.Player.Character.Handle))
             {
                 float distance = Vector3.Distance(dog.Position, ped.Position);
-                if (distance < closestDistance)
+                if (distance < closestDistance && distance <= 30.0f)
                 {
                     closestPed = ped;
                     closestDistance = distance;
@@ -314,7 +399,7 @@ public class Dog
         if (player == null || !player.Exists())
             return false;
 
-        foreach (Ped npc in World.GetNearbyPeds(player.Position, 55.0f))
+        foreach (Ped npc in World.GetNearbyPeds(player.Position, 30.0f))
         {
             if (npc != null && npc.Exists() && IsValidPedestrianTarget(npc, player.Handle) && player.HasBeenDamagedBy(npc))
             {
@@ -359,7 +444,31 @@ public class Dog
 
     public bool IsValidAggressivePed(Ped ped)
     {
-        return ped != null && ped.Exists() && ped.IsAlive && !ped.IsPlayer && ped.IsHuman && IsPedAggressiveTowardsPlayer(ped);
+        return ped != null && ped.Exists() && ped.IsAlive && !ped.IsPlayer && IsPedAggressiveTowardsPlayer(ped);
+    }
+
+    public void AttackAggressivePedestrians()
+    {
+        Ped closestAggressivePed = GetClosestAggressivePed();
+        if (closestAggressivePed != null)
+        {
+            ClearDogTasks();
+            Function.Call(Hash.TASK_COMBAT_PED, dog.Handle, closestAggressivePed.Handle, 0, 16);
+            isAttacking = true;
+            isFollowing = false;
+            isSitting = false;
+            isLayingDown = false;
+
+        }
+    }
+
+    public void StopAttacking()
+    {
+        if (isAttacking && dog != null && dog.Exists())
+        {
+            ClearDogTasks();
+            isAttacking = false;
+        }
     }
 
     public void CheckGestures()
@@ -377,7 +486,8 @@ public class Dog
         }
         else if (CheckForGesture("gesture_bring_it_on", "gestures@m@standing@casual"))
         {
-            Attack();
+            StartAttacking();
+
         }
         else if (CheckForGesture("gesture_bye_soft", "gestures@m@standing@casual"))
         {
@@ -403,6 +513,9 @@ public class Dog
 
     public void PlayAnimationCommon(string animationDictionary, string animationName, string taskName = "")
     {
+        if (string.IsNullOrEmpty(animationDictionary) || string.IsNullOrEmpty(animationName))
+            return;
+
         RequestAndCheckAnimationDict(animationDictionary);
         ClearDogTasks();
         Function.Call(Hash.TASK_PLAY_ANIM, dog.Handle, animationDictionary, animationName, 8.0f, -8.0f, -1, 1, 0.0f, false, false, false);
