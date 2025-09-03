@@ -4,7 +4,7 @@ using System.Windows.Forms;
 using GTA;
 using GTA.Math;
 using GTA.Native;
-using GTA.UI;
+
 
 public class DogScript : Script
 {
