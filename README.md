@@ -3,7 +3,7 @@
 
 DogScript is a Grand Theft Auto V script that adds a companion dog to the game. 
 The script allows players to spawn, control, and interact with a loyal Rottweiler companion
-I am using the Gesture system of Los Santos Red.
+using the Gesture system of Los Santos Red.
 
 Features
 Spawn Dog: Use the Scroll Lock key to spawn or remove the dog companion.
